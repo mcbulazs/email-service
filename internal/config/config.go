@@ -12,20 +12,24 @@ type MongoConfig struct {
 }
 
 type Config struct {
-	Env     string // e.g. "dev" or "prod"
-	Port    string
-	Mongo   MongoConfig
-	LogFile string
+	Env       string // e.g. "dev" or "prod"
+	Port      string
+	DNSPrefix string
+	Mongo     MongoConfig
+	LogFile   string
+	SUPERKEY  string
 }
 
 var AppConfig Config
 
 func Load() {
 	AppConfig = Config{
-		Env:     getEnv("APP_ENV", "dev"),
-		Port:    getEnv("PORT", "8080"),
-		LogFile: getEnv("LOG_FILE", "logs/email-api.log"),
-		Mongo:   loadMongoConfig(),
+		Env:       getEnv("APP_ENV", "dev"),
+		Port:      getEnv("PORT", "8080"),
+		LogFile:   getEnv("LOG_FILE", "logs/email-api.log"),
+		DNSPrefix: getEnv("DNS_PREFIX", "email-verification"),
+		SUPERKEY:  getEnv("SUPER_KEY", "Admin123?"),
+		Mongo:     loadMongoConfig(),
 	}
 }
 

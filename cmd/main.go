@@ -1,12 +1,15 @@
 package main
 
 import (
+	"context"
 	"net/http"
 
 	"mcbulazs/email-service/internal/config"
 	"mcbulazs/email-service/internal/handlers"
 	"mcbulazs/email-service/internal/logging"
 	"mcbulazs/email-service/internal/mongo"
+	"mcbulazs/email-service/internal/repositories"
+	"mcbulazs/email-service/internal/services"
 )
 
 func main() {
@@ -21,11 +24,22 @@ func main() {
 		logging.ErrorLogger.Fatalf("Could not connect to MongoDB: %v", err)
 		return
 	}
-	defer db.Disconnect()
+	defer func() {
+		err := db.Disconnect(context.Background())
+		if err != nil {
+			logging.ErrorLogger.Printf("Could not disconnect from MongoDB: %v", err)
+		}
+	}()
+
+	// repositories
+	verifyRepo := repositories.NewVerifyRepository(db)
+
+	// services
+	verifyService := services.NewVerifyService(verifyRepo)
 
 	// controllers
 	controller := handlers.Controller{
-		Repo: db,
+		Service: verifyService,
 	}
 	http.HandleFunc("POST /verify", controller.InitVerifyHandler)
 

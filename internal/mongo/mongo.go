@@ -11,12 +11,8 @@ import (
 	"mcbulazs/email-service/internal/logging"
 )
 
-type mongoDB struct {
-	Client *mongo.Client
-}
-
 // Connect to MongoDB
-func Connect() (*mongoDB, error) {
+func Connect() (*mongo.Client, error) {
 	// Set client options
 	var clientOptions *options.ClientOptions
 	if config.AppConfig.Mongo.USER != "" {
@@ -46,30 +42,5 @@ func Connect() (*mongoDB, error) {
 	}
 
 	logging.InfoLogger.Println("Successfully connected to MongoDB!")
-	return &mongoDB{Client: client}, nil
-}
-
-// Disconnect from MongoDB
-func (client *mongoDB) Disconnect() {
-	err := client.Client.Disconnect(context.Background())
-	if err != nil {
-		logging.ErrorLogger.Fatalf("Could not disconnect from MongoDB: %v", err)
-	}
-	logging.InfoLogger.Println("Disconnected from MongoDB!")
-}
-
-// InsertData inserts a document into a collection
-func (client *mongoDB) InsertData(collectionName string, data any) error {
-	collection := client.Client.Database(config.AppConfig.Mongo.DATABASE).Collection(collectionName)
-	_, err := collection.InsertOne(context.Background(), data)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (client *mongoDB) GetData(collectionName string, filter any) any {
-	collection := client.Client.Database(config.AppConfig.Mongo.DATABASE).Collection(collectionName)
-	result := collection.FindOne(context.Background(), filter)
-	return result
+	return client, nil
 }

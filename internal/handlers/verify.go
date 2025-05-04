@@ -3,8 +3,6 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
-
-	"mcbulazs/email-service/internal/interfaces"
 )
 
 type VerifyRequest struct {
@@ -12,8 +10,12 @@ type VerifyRequest struct {
 	APIKey string `json:"api_key"`
 }
 
+type VerifyServiceInterface interface {
+	VerifyDomain(domain, apiKey string) error
+}
+
 type Controller struct {
-	Repo interfaces.DB
+	Service VerifyServiceInterface
 }
 
 func (c *Controller) InitVerifyHandler(w http.ResponseWriter, r *http.Request) {
@@ -23,9 +25,9 @@ func (c *Controller) InitVerifyHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid request", http.StatusBadRequest)
 		return
 	}
-	// TODO> validate API key
-
-	// TODO: validate Domain (owned by user)
-
-	// TODO: store info in mongo
+	err = c.Service.VerifyDomain(req.Domain, req.APIKey)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
 }
