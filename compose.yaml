@@ -1,0 +1,19 @@
+services:
+  mongo:
+    image: mongo:latest
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - dbdata:/data/db
+  app:
+    build: .
+    depends_on:
+      - "mongo"
+    networks:
+      - email-service-network
+networks:
+  email-service-network:
+    driver: bridge
+volumes:
+  dbdata:
